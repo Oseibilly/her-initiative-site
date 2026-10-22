@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — HER Initiative</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css?v=7">
+<link rel="stylesheet" href="/admin/admin.css?v=7">
+</head>
+<body class="admin-body">
+
+<div class="admin-shell" id="admin-shell" hidden>
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-brand">
+      <img src="/images/logo-transparent.png" alt="HER Initiative logo">
+      <span>HER Initiative</span>
+    </div>
+    <nav class="admin-nav">
+      <button type="button" class="admin-nav-item is-active" data-view="dashboard" data-admin-only>Dashboard</button>
+      <button type="button" class="admin-nav-item" data-view="executives">Executive Members</button>
+      <button type="button" class="admin-nav-item" data-view="events">Events &amp; Meetings</button>
+      <button type="button" class="admin-nav-item" data-view="users" data-admin-only>Manage Users</button>
+      <button type="button" class="admin-nav-item" data-view="suggestions">Suggestion Box</button>
+      <button type="button" class="admin-nav-item" data-view="metrics" data-admin-only>Impact Metrics</button>
+      <button type="button" class="admin-nav-item" data-view="site-images" data-admin-only>Photo Placeholders</button>
+      <button type="button" class="admin-nav-item" data-view="submissions" data-admin-only>Submissions</button>
+    </nav>
+    <a href="/" class="admin-view-site-link">&larr; View website</a>
+    <p class="portal-welcome" id="welcome-note"></p>
+    <button id="logout-btn" class="btn btn-ghost admin-logout-btn">Log out</button>
+  </aside>
+
+  <main class="admin-content">
+
+    <section class="admin-view is-active" data-view-panel="dashboard">
+      <div class="admin-view-head">
+        <h1>Dashboard</h1>
+        <p class="admin-panel-note">A quick summary of what's happening across HER Initiative.</p>
+      </div>
+      <div class="admin-summary-grid" id="summary-grid"></div>
+    </section>
+
+    <section class="admin-view" data-view-panel="executives">
+      <div class="admin-view-head">
+        <h1>Executive Members</h1>
+        <p class="admin-panel-note">Photo, name, and position for each executive — shown on the public site.</p>
+      </div>
+      <form id="exec-form" class="admin-form" enctype="multipart/form-data" data-admin-only>
+        <input type="hidden" id="exec-id" value="">
+        <div class="admin-form-row-group">
+          <div class="form-row">
+            <label for="exec-name">Name</label>
+            <input type="text" id="exec-name" required>
+          </div>
+          <div class="form-row">
+            <label for="exec-position">Position</label>
+            <input type="text" id="exec-position" required>
+          </div>
+          <div class="form-row admin-form-row-narrow">
+            <label for="exec-order">Display order</label>
+            <input type="number" id="exec-order" value="0" min="0" step="1">
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="exec-photo">Photo (optional, JPEG/PNG/WebP, max 5MB)</label>
+          <input type="file" id="exec-photo" accept="image/jpeg,image/png,image/webp">
+        </div>
+        <div class="admin-form-actions">
+          <button type="submit" class="btn btn-dark" id="exec-submit-btn">Add executive</button>
+          <button type="button" class="btn btn-ghost admin-cancel-btn" id="exec-cancel-btn" style="display:none;">Cancel edit</button>
+        </div>
+        <p class="form-status" id="exec-status" role="status" aria-live="polite"></p>
+      </form>
+      <div class="admin-exec-list" id="exec-list"></div>
+    </section>
+
+    <section class="admin-view" data-view-panel="events">
+      <div class="admin-view-head">
+        <h1>Events &amp; Meetings</h1>
+        <p class="admin-panel-note">Schedule ahead of time. Optionally email every member when it's published.</p>
+      </div>
+      <form id="event-form" class="admin-form" data-admin-only>
+        <input type="hidden" id="event-id" value="">
+        <div class="admin-form-row-group">
+          <div class="form-row">
+            <label for="event-title">Title</label>
+            <input type="text" id="event-title" required>
+          </div>
+          <div class="form-row">
+            <label for="event-date">Date &amp; time</label>
+            <input type="datetime-local" id="event-date" required>
+          </div>
+          <div class="form-row">
+            <label for="event-location">Location (optional)</label>
+            <input type="text" id="event-location">
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="event-description">Description (optional)</label>
+          <textarea id="event-description" rows="4"></textarea>
+        </div>
+        <label class="admin-checkbox-row">
+          <input type="checkbox" id="event-notify">
+          Email all members about this event
+        </label>
+        <div class="admin-form-actions">
+          <button type="submit" class="btn btn-dark" id="event-submit-btn">Schedule event</button>
+          <button type="button" class="btn btn-ghost admin-cancel-btn" id="event-cancel-btn" style="display:none;">Cancel edit</button>
+        </div>
+        <p class="form-status" id="event-status" role="status" aria-live="polite"></p>
+      </form>
+      <div class="admin-list" id="event-list"></div>
+    </section>
+
+    <section class="admin-view" data-view-panel="users">
+      <div class="admin-view-head admin-view-head-row">
+        <div>
+          <h1>Manage Users</h1>
+          <p class="admin-panel-note">Every admin and member account, in one place. Click anyone to view their profile, reset a password, or remove their account.</p>
+        </div>
+        <button type="button" class="btn btn-dark" id="add-user-btn">+ Add user</button>
+      </div>
+
+      <div class="users-stats-row" id="users-stats-row"></div>
+
+      <div class="users-toolbar">
+        <input type="search" id="users-search" class="users-search" placeholder="Search by name or email…">
+        <div class="users-filter-pills" id="users-filter-pills">
+          <button type="button" class="filter-pill is-active" data-role-filter="all">All</button>
+          <button type="button" class="filter-pill" data-role-filter="admin">Admins</button>
+          <button type="button" class="filter-pill" data-role-filter="member">Members</button>
+        </div>
+      </div>
+
+      <div class="users-table-wrap">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody id="user-list"></tbody>
+        </table>
+        <p class="admin-panel-note" id="users-empty-note" hidden>No users match your search.</p>
+      </div>
+    </section>
+
+    <section class="admin-view" data-view-panel="suggestions">
+      <div class="admin-view-head">
+        <h1>Suggestion Box</h1>
+        <p class="admin-panel-note">Leave a message for the admins — every logged-in member can read this board.</p>
+      </div>
+      <form id="suggestion-form" class="admin-form">
+        <div class="form-row">
+          <label for="suggestion-message">Your message</label>
+          <textarea id="suggestion-message" rows="4" required></textarea>
+        </div>
+        <div class="admin-form-actions">
+          <button type="submit" class="btn btn-dark">Post message</button>
+        </div>
+        <p class="form-status" id="suggestion-post-status" role="status" aria-live="polite"></p>
+      </form>
+      <div class="admin-list" id="suggestion-list"></div>
+    </section>
+
+    <section class="admin-view" data-view-panel="metrics">
+      <div class="admin-view-head">
+        <h1>Impact Metrics</h1>
+        <p class="admin-panel-note">These numbers power the "Our Impact" section on the public site.</p>
+      </div>
+      <form id="metrics-form" class="admin-metrics-grid"></form>
+      <button type="submit" form="metrics-form" class="btn btn-dark">Save metrics</button>
+      <p class="form-status" id="metrics-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="admin-view" data-view-panel="site-images">
+      <div class="admin-view-head">
+        <h1>Photo Placeholders</h1>
+        <p class="admin-panel-note">The public site uses abstract placeholder graphics wherever real photography hasn't been added yet. Upload an image below to replace any placeholder — the layout stays exactly the same. Remove an image to go back to the abstract placeholder.</p>
+      </div>
+      <div class="site-images-grid" id="site-images-grid"></div>
+    </section>
+
+    <section class="admin-view" data-view-panel="submissions">
+      <div class="admin-view-head">
+        <h1>Submissions</h1>
+        <p class="admin-panel-note">Everything submitted through the public site's forms — Join HER, Volunteer, Partner With HER, Support Our Mission, and Contact.</p>
+      </div>
+      <div class="users-filter-pills" id="submissions-type-pills">
+        <button type="button" class="filter-pill is-active" data-submission-type="support">Support</button>
+        <button type="button" class="filter-pill" data-submission-type="partner">Partner</button>
+        <button type="button" class="filter-pill" data-submission-type="volunteer">Volunteer</button>
+        <button type="button" class="filter-pill" data-submission-type="join">Join HER</button>
+        <button type="button" class="filter-pill" data-submission-type="contact">Contact</button>
+      </div>
+      <div class="admin-list" id="submissions-list" style="margin-top:24px;"></div>
+    </section>
+
+  </main>
+</div>
+
+<div class="user-modal-backdrop" id="user-modal-backdrop" hidden></div>
+<div class="user-modal" id="user-modal" aria-hidden="true">
+  <div class="user-modal-head">
+    <div>
+      <h2 id="profile-name"></h2>
+      <span class="admin-badge" id="profile-role-badge"></span>
+    </div>
+    <button type="button" class="drawer-close-btn" id="profile-close-btn" aria-label="Close profile">&times;</button>
+  </div>
+  <p class="admin-panel-note" id="profile-meta"></p>
+
+  <div class="user-modal-body">
+    <div class="user-modal-section">
+      <h3>Account details</h3>
+      <form id="profile-details-form" class="admin-form">
+        <div class="form-row">
+          <label for="profile-name-input">Full name</label>
+          <input type="text" id="profile-name-input" required>
+        </div>
+        <div class="form-row">
+          <label for="profile-email-input">Email</label>
+          <input type="email" id="profile-email-input" required>
+        </div>
+        <div class="form-row admin-form-row-narrow">
+          <label for="profile-role-input">Role</label>
+          <select id="profile-role-input">
+            <option value="member">Member</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="admin-form-actions">
+          <button type="submit" class="btn btn-dark">Save details</button>
+        </div>
+        <p class="form-status" id="profile-details-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <div class="user-modal-section">
+      <h3>Reset password</h3>
+      <p class="admin-panel-note">Passwords are stored securely and can never be viewed — set a new one when someone forgets theirs, then share it with them directly.</p>
+      <form id="profile-password-form" class="admin-form">
+        <div class="form-row">
+          <label for="profile-password-input">New password</label>
+          <input type="text" id="profile-password-input" placeholder="Min. 8 characters" required>
+        </div>
+        <div class="admin-form-actions">
+          <button type="submit" class="btn btn-dark">Set new password</button>
+        </div>
+        <p class="form-status" id="profile-password-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <div class="user-modal-section user-modal-danger">
+      <h3>Danger zone</h3>
+      <p class="admin-panel-note">Deleting an account is permanent — they'll no longer be able to log in.</p>
+      <button type="button" class="admin-link-btn admin-link-btn-danger" id="profile-delete-btn">Delete this account</button>
+      <p class="form-status" id="profile-delete-status" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+</div>
+
+<div class="user-modal-backdrop" id="add-user-modal-backdrop" hidden></div>
+<div class="user-modal" id="add-user-modal" aria-hidden="true">
+  <div class="user-modal-head">
+    <div>
+      <h2>Add a new user</h2>
+      <p class="admin-panel-note">Choose their role — you can change it later from their profile.</p>
+    </div>
+    <button type="button" class="drawer-close-btn" id="add-user-close-btn" aria-label="Close">&times;</button>
+  </div>
+
+  <div class="user-modal-body">
+    <div class="user-modal-section" style="border-top:none; padding-top:6px;">
+      <form id="user-form" class="admin-form">
+        <div class="form-row">
+          <label for="user-name">Full name</label>
+          <input type="text" id="user-name" required>
+        </div>
+        <div class="form-row">
+          <label for="user-email">Email</label>
+          <input type="email" id="user-email" required>
+        </div>
+        <div class="form-row">
+          <label for="user-password">Password</label>
+          <input type="text" id="user-password" placeholder="Min. 8 characters" required>
+        </div>
+        <div class="form-row admin-form-row-narrow">
+          <label for="user-role">Role</label>
+          <select id="user-role">
+            <option value="member">Member</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="admin-form-actions">
+          <button type="submit" class="btn btn-dark" id="user-submit-btn">Create account</button>
+        </div>
+        <p class="form-status" id="user-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="/admin/dashboard.js"></script>
+</body>
+</html>
