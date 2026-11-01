@@ -7,6 +7,11 @@ server {
     listen [::]:80;
     server_name herinitiativegh.org www.herinitiativegh.org;
 
+    # News posts can include videos (up to 100MB each, several per post), and
+    # nginx rejects anything over 1MB by default — keep this at or above the
+    # largest upload you want to allow.
+    client_max_body_size 120M;
+
     location / {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;

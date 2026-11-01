@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSuggestions();
 
   if (isAdmin) {
+    initNews();
     initMetrics();
     initUserProfileModal();
     initCreateUserModal();
@@ -43,6 +44,7 @@ function initNav(isAdmin) {
     dashboard: loadSummary,
     executives: () => window.__loadExecutives && window.__loadExecutives(),
     events: () => window.__loadEvents && window.__loadEvents(),
+    news: () => window.__loadNews && window.__loadNews(),
     users: () => window.__loadUsers && window.__loadUsers(),
     suggestions: () => window.__loadSuggestions && window.__loadSuggestions(),
     'site-images': () => window.__loadSiteImages && window.__loadSiteImages(),
@@ -79,6 +81,218 @@ async function loadSummary() {
   } catch (err) {
     grid.innerHTML = '<p class="admin-panel-note">Could not load summary.</p>';
   }
+}
+
+/* ---------- News (admin only) ---------- */
+function initNews() {
+  const form = document.getElementById('news-form');
+  const listEl = document.getElementById('news-list');
+  const status = document.getElementById('news-status');
+  const idField = document.getElementById('news-id');
+  const titleField = document.getElementById('news-title');
+  const excerptField = document.getElementById('news-excerpt');
+  const bodyField = document.getElementById('news-body');
+  const mediaField = document.getElementById('news-media');
+  const publishedField = document.getElementById('news-published');
+  const submitBtn = document.getElementById('news-submit-btn');
+  const cancelBtn = document.getElementById('news-cancel-btn');
+  const selectedEl = document.getElementById('news-selected-files');
+  const existingEl = document.getElementById('news-existing-media');
+  const progress = document.getElementById('news-progress');
+  const progressBar = document.getElementById('news-progress-bar');
+
+  const MAX_IMAGE = 10 * 1024 * 1024;
+  const MAX_VIDEO = 100 * 1024 * 1024;
+  let posts = [];
+
+  function formatSize(bytes) {
+    if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  }
+
+  function renderSelected() {
+    const files = Array.from(mediaField.files);
+    selectedEl.innerHTML = files
+      .map((f) => `<span class="news-chip">${escapeHtml(f.name)} · ${formatSize(f.size)}</span>`)
+      .join('');
+  }
+  mediaField.addEventListener('change', renderSelected);
+
+  function resetForm() {
+    idField.value = '';
+    form.reset();
+    publishedField.checked = true;
+    submitBtn.textContent = 'Publish post';
+    cancelBtn.style.display = 'none';
+    selectedEl.innerHTML = '';
+    existingEl.innerHTML = '';
+  }
+
+  function mediaThumb(m, removable) {
+    const preview =
+      m.type === 'video'
+        ? `<video src="${escapeHtml(m.url)}#t=0.1" preload="metadata" muted></video><span class="news-thumb-badge">Video</span>`
+        : `<img src="${escapeHtml(m.url)}" alt="">`;
+    return `<div class="news-thumb" data-media-id="${m.id}">${preview}${
+      removable ? '<button type="button" class="news-thumb-remove" data-action="remove-media" aria-label="Remove this file">&times;</button>' : ''
+    }</div>`;
+  }
+
+  function renderExisting(post) {
+    if (!post || post.media.length === 0) {
+      existingEl.innerHTML = '';
+      return;
+    }
+    existingEl.innerHTML = `<p class="admin-panel-note">Current files — click &times; to remove one.</p><div class="news-thumb-row">${post.media
+      .map((m) => mediaThumb(m, true))
+      .join('')}</div>`;
+    existingEl.querySelectorAll('[data-action="remove-media"]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const mediaId = btn.closest('.news-thumb').dataset.mediaId;
+        if (!confirm('Remove this file from the post?')) return;
+        const res = await fetch(`/api/admin/news/${post.id}/media/${mediaId}`, { method: 'DELETE' });
+        if (!res.ok) {
+          status.textContent = 'Could not remove that file.';
+          status.className = 'form-status error';
+          return;
+        }
+        post.media = post.media.filter((m) => String(m.id) !== String(mediaId));
+        renderExisting(post);
+        loadNews();
+      });
+    });
+  }
+
+  async function loadNews() {
+    try {
+      const res = await fetch('/api/admin/news');
+      posts = await res.json();
+    } catch (err) {
+      listEl.innerHTML = '<p class="admin-panel-note">Could not load news posts.</p>';
+      return;
+    }
+
+    if (posts.length === 0) {
+      listEl.innerHTML = '<p class="admin-panel-note">No news posts yet.</p>';
+      return;
+    }
+
+    listEl.innerHTML = posts
+      .map(
+        (p) => `
+        <div class="admin-list-item" data-id="${p.id}">
+          <div class="admin-list-item-head">
+            <h3>${escapeHtml(p.title)}</h3>
+            <span class="admin-badge ${p.is_published ? 'is-good' : 'is-neutral'}">${p.is_published ? 'Published' : 'Draft'}</span>
+          </div>
+          <p class="admin-list-item-meta">${formatDateTime(p.published_at)} · ${p.media.length} file${p.media.length === 1 ? '' : 's'}</p>
+          ${p.excerpt ? `<p class="admin-suggestion-message">${escapeHtml(p.excerpt)}</p>` : ''}
+          ${p.media.length ? `<div class="news-thumb-row">${p.media.map((m) => mediaThumb(m, false)).join('')}</div>` : ''}
+          <div class="admin-list-item-actions">
+            <button type="button" class="admin-link-btn" data-action="edit">Edit</button>
+            <button type="button" class="admin-link-btn admin-link-btn-danger" data-action="delete">Delete</button>
+          </div>
+        </div>`
+      )
+      .join('');
+
+    listEl.querySelectorAll('.admin-list-item').forEach((item) => {
+      const post = posts.find((p) => String(p.id) === item.dataset.id);
+
+      item.querySelector('[data-action="edit"]').addEventListener('click', () => {
+        idField.value = post.id;
+        titleField.value = post.title;
+        excerptField.value = post.excerpt || '';
+        bodyField.value = post.body;
+        publishedField.checked = post.is_published;
+        mediaField.value = '';
+        selectedEl.innerHTML = '';
+        renderExisting(post);
+        submitBtn.textContent = 'Save changes';
+        cancelBtn.style.display = 'inline-flex';
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      item.querySelector('[data-action="delete"]').addEventListener('click', async () => {
+        if (!confirm(`Delete "${post.title}" and all its pictures and videos?`)) return;
+        await fetch(`/api/admin/news/${post.id}`, { method: 'DELETE' });
+        if (idField.value === String(post.id)) resetForm();
+        loadNews();
+      });
+    });
+  }
+
+  cancelBtn.addEventListener('click', resetForm);
+
+  function send(method, url, formData) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open(method, url);
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) progressBar.style.width = `${Math.round((e.loaded / e.total) * 100)}%`;
+      });
+      xhr.onload = () => {
+        let data = {};
+        try {
+          data = JSON.parse(xhr.responseText);
+        } catch (err) {}
+        if (xhr.status >= 200 && xhr.status < 300) resolve(data);
+        else if (xhr.status === 413) reject(new Error('The upload is too large for the server. Try fewer or smaller files.'));
+        else reject(new Error(data.error || 'Failed to save post.'));
+      };
+      xhr.onerror = () => reject(new Error('Network error while uploading. Please try again.'));
+      xhr.send(formData);
+    });
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    status.textContent = '';
+    status.className = 'form-status';
+
+    const files = Array.from(mediaField.files);
+    if (files.length > 10) {
+      status.textContent = 'Please choose 10 files or fewer at a time.';
+      status.className = 'form-status error';
+      return;
+    }
+    const tooBig = files.find((f) => (f.type.startsWith('video/') ? f.size > MAX_VIDEO : f.size > MAX_IMAGE));
+    if (tooBig) {
+      status.textContent = `"${tooBig.name}" is too large (images max 10MB, videos max 100MB).`;
+      status.className = 'form-status error';
+      return;
+    }
+
+    const data = new FormData();
+    data.append('title', titleField.value);
+    data.append('excerpt', excerptField.value);
+    data.append('body', bodyField.value);
+    data.append('isPublished', publishedField.checked ? 'true' : 'false');
+    files.forEach((f) => data.append('media', f));
+
+    const isEdit = Boolean(idField.value);
+    submitBtn.disabled = true;
+    progressBar.style.width = '0%';
+    progress.hidden = files.length === 0;
+    status.textContent = files.length ? 'Uploading…' : 'Saving…';
+
+    try {
+      await send(isEdit ? 'PUT' : 'POST', isEdit ? `/api/admin/news/${idField.value}` : '/api/admin/news', data);
+      status.textContent = isEdit ? 'Saved.' : 'Published.';
+      status.className = 'form-status success';
+      resetForm();
+      loadNews();
+    } catch (err) {
+      status.textContent = err.message || 'Failed to save post.';
+      status.className = 'form-status error';
+    } finally {
+      submitBtn.disabled = false;
+      progress.hidden = true;
+    }
+  });
+
+  window.__loadNews = loadNews;
+  loadNews();
 }
 
 /* ---------- Metrics (admin only) ---------- */

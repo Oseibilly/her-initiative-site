@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     { title: 'HER Stories', url: '/her-stories', keywords: 'stories voices conversations experts' },
     { title: 'The People Behind HER', url: '/leadership', keywords: 'team leadership founder hannah advisory board' },
     { title: 'Our Impact', url: '/impact', keywords: 'impact reach programs outcomes learning next chapter' },
+    { title: 'News', url: '/news', keywords: 'news updates announcements videos photos latest' },
     { title: 'Resources', url: '/resources', keywords: 'articles guides events faqs knowledge hub' },
     { title: 'Get Involved', url: '/get-involved', keywords: 'join volunteer partner support' },
     { title: 'Join HER', url: '/join', keywords: 'join community sign up newsletter' },

@@ -20,6 +20,7 @@ const suggestionsRouter = require('./routes/suggestions');
 const adminSummaryRouter = require('./routes/admin-summary');
 const siteImagesRouter = require('./routes/site-images');
 const submissionsRouter = require('./routes/submissions');
+const newsRouter = require('./routes/news');
 
 const ROOT = path.join(__dirname, '..');
 const PAGES = path.join(ROOT, 'pages');
@@ -40,6 +41,8 @@ app.get('/programmes', (req, res) => sendPage(res, path.join(PAGES, 'programmes.
 app.get('/her-stories', (req, res) => sendPage(res, path.join(PAGES, 'her-stories.html')));
 app.get('/leadership', (req, res) => sendPage(res, path.join(PAGES, 'leadership.html')));
 app.get('/impact', (req, res) => sendPage(res, path.join(PAGES, 'impact.html')));
+app.get('/news', (req, res) => sendPage(res, path.join(PAGES, 'news.html')));
+app.get('/news/:id', (req, res) => sendPage(res, path.join(PAGES, 'news.html')));
 app.get('/resources', (req, res) => sendPage(res, path.join(PAGES, 'resources.html')));
 app.get('/get-involved', (req, res) => sendPage(res, path.join(PAGES, 'get-involved.html')));
 app.get('/join', (req, res) => sendPage(res, path.join(PAGES, 'join.html')));
@@ -60,6 +63,7 @@ const staticOptions = { maxAge: '1d' };
 app.use('/css', express.static(path.join(ROOT, 'css'), staticOptions));
 app.use('/js', express.static(path.join(ROOT, 'js'), staticOptions));
 app.use('/images', express.static(path.join(ROOT, 'images'), staticOptions));
+app.use('/uploads', express.static(path.join(ROOT, 'uploads'), { maxAge: '7d' }));
 
 app.use('/api', signupRouter);
 app.use('/api', partnerRouter);
@@ -75,10 +79,19 @@ app.use('/api', suggestionsRouter);
 app.use('/api', adminSummaryRouter);
 app.use('/api', siteImagesRouter);
 app.use('/api', submissionsRouter);
+app.use('/api', newsRouter);
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
 app.use((err, req, res, next) => {
-  if (err instanceof multer.MulterError || /Only JPEG, PNG, or WebP/.test(err.message || '')) {
+  if (err instanceof multer.MulterError) {
+    const messages = {
+      LIMIT_FILE_SIZE: 'A file is too large. Images can be up to 10MB and videos up to 100MB.',
+      LIMIT_FILE_COUNT: 'You can upload up to 10 files at a time.',
+      LIMIT_UNEXPECTED_FILE: 'Unexpected file field.',
+    };
+    return res.status(400).json({ error: messages[err.code] || err.message });
+  }
+  if (err.isUploadError || /Only JPEG, PNG, or WebP/.test(err.message || '')) {
     return res.status(400).json({ error: err.message });
   }
   next(err);

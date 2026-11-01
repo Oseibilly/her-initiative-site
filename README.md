@@ -14,7 +14,8 @@ her-initiative-site/
 │   ├── about.html           # Why HER Exists, Our Story, The Silence, Timeline, Who We Are
 │   ├── programmes.html       # Five programmes + Knowledge Hub
 │   ├── leadership.html        # Leadership (dynamic) + Advisory Board
-│   ├── impact.html             # Reach, Impact metrics (dynamic), News (dynamic)
+│   ├── impact.html             # Reach, Impact metrics (dynamic), latest News (dynamic)
+│   ├── news.html                # News list at /news and single posts at /news/:id
 │   ├── get-involved.html        # Support banner + Join/Partner/Support forms + closing CTA
 │   └── contact.html              # Contact details
 ├── partials/              # Shared header/nav and footer, injected server-side
@@ -27,10 +28,11 @@ her-initiative-site/
 │   ├── home.js                  # Home page's dynamic teasers
 │   ├── leadership.js             # Fetches /api/executives
 │   ├── impact.js                  # Fetches /api/metrics
-│   ├── news.js                     # Fetches /api/news
+│   ├── news.js                     # News list, home teaser, and single-post view (/api/news)
 │   ├── join.js, partner.js, support.js   # The three Get Involved forms
 ├── admin/                 # Admin/member dashboard (role-based) — see below
 ├── images/                # Logo + uploaded executive photos
+├── uploads/               # News pictures and videos uploaded from the admin (not in git — back up)
 └── server/                # Backend: Express API + PostgreSQL
     ├── index.js              # Routes for every page, static assets, and /api/*
     ├── render.js               # Injects partials/nav.html + footer.html into each page
@@ -73,6 +75,8 @@ browser will not work.
 2. Copy `.env.example` to `.env` and fill in `DATABASE_URL`, SMTP
    credentials, and `SESSION_SECRET`.
 3. `npm run migrate` — creates all tables.
+   If you already had a database from before News had pictures/videos, run
+   `npm run migrate:news` once as well.
 4. `node scripts/create-admin.js` — creates your first admin login.
 5. `npm start` — serves the whole site and the API at `http://localhost:3000`.
 
@@ -103,3 +107,12 @@ a Hostinger VPS, buying the domain, and wiring the two together.
 | `--ivory-dim` | `#CDA0E6` | Secondary lavender background |
 | `--gold` | `#D4AF37` | Accent on dark backgrounds — true gold |
 | `--ink` | `#241C22` | Body text |
+
+## News (pictures & videos)
+
+Admins create posts under **News** in `/admin`: title, optional summary, text,
+and up to 10 pictures/videos at a time (images JPEG/PNG/WebP ≤ 10MB; videos
+MP4/WebM/MOV ≤ 100MB). Files are stored in `uploads/news/` and served from
+`/uploads/news/…`. Published posts show on `/news`, the latest three on the
+Impact page, and a teaser on the home page. Unticking "Published" keeps a post
+as a draft. Deleting a post or a single file also deletes it from disk.

@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node index.js",
-    "migrate": "node db/migrate.js"
+    "migrate": "node db/migrate.js",
+    "migrate:news": "node db/migrate-news-media.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

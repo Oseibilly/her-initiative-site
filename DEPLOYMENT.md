@@ -210,3 +210,15 @@ git pull                       # if using the git-based workflow
 cd server && npm install --omit=dev   # only if dependencies changed
 pm2 restart her-initiative
 ```
+
+## News uploads (videos) — extra server steps
+
+1. In the nginx config, make sure `client_max_body_size 120M;` is present in the
+   `server { }` block (see `deploy/nginx.conf.example`), then
+   `sudo nginx -t && sudo systemctl reload nginx`. Without it, nginx rejects
+   uploads over 1MB and the admin shows an "upload too large" error.
+2. Run `npm run migrate:news` once in `server/` on existing databases.
+3. Uploaded pictures/videos live in `uploads/news/`, which is **not** in git.
+   `git pull` will not touch it, but include it in your backups (for example
+   `rsync -a uploads/ you@backup:her-uploads/`) and keep an eye on disk space.
+4. `pm2 restart her-initiative` after deploying.

@@ -7,8 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/styles.css?v=7">
-<link rel="stylesheet" href="/admin/admin.css?v=7">
+<link rel="stylesheet" href="/css/styles.css?v=8">
+<link rel="stylesheet" href="/admin/admin.css?v=8">
 </head>
 <body class="admin-body">
 
@@ -22,6 +22,7 @@
       <button type="button" class="admin-nav-item is-active" data-view="dashboard" data-admin-only>Dashboard</button>
       <button type="button" class="admin-nav-item" data-view="executives">Executive Members</button>
       <button type="button" class="admin-nav-item" data-view="events">Events &amp; Meetings</button>
+      <button type="button" class="admin-nav-item" data-view="news" data-admin-only>News</button>
       <button type="button" class="admin-nav-item" data-view="users" data-admin-only>Manage Users</button>
       <button type="button" class="admin-nav-item" data-view="suggestions">Suggestion Box</button>
       <button type="button" class="admin-nav-item" data-view="metrics" data-admin-only>Impact Metrics</button>
@@ -113,6 +114,45 @@
         <p class="form-status" id="event-status" role="status" aria-live="polite"></p>
       </form>
       <div class="admin-list" id="event-list"></div>
+    </section>
+
+    <section class="admin-view" data-view-panel="news">
+      <div class="admin-view-head">
+        <h1>News</h1>
+        <p class="admin-panel-note">Post updates with pictures and videos. Published posts appear on the News page, the Impact page, and the home page.</p>
+      </div>
+      <form id="news-form" class="admin-form" enctype="multipart/form-data" data-admin-only>
+        <input type="hidden" id="news-id" value="">
+        <div class="form-row">
+          <label for="news-title">Title</label>
+          <input type="text" id="news-title" required>
+        </div>
+        <div class="form-row">
+          <label for="news-excerpt">Short summary (optional — shown in lists)</label>
+          <input type="text" id="news-excerpt" maxlength="240">
+        </div>
+        <div class="form-row">
+          <label for="news-body">News text</label>
+          <textarea id="news-body" rows="8" required></textarea>
+        </div>
+        <div class="form-row">
+          <label for="news-media">Pictures &amp; videos (optional — images JPEG/PNG/WebP up to 10MB, videos MP4/WebM/MOV up to 100MB, up to 10 files at a time)</label>
+          <input type="file" id="news-media" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" multiple>
+        </div>
+        <div class="news-selected-files" id="news-selected-files"></div>
+        <div class="news-existing-media" id="news-existing-media"></div>
+        <label class="admin-checkbox-row">
+          <input type="checkbox" id="news-published" checked>
+          Published (visible on the public site)
+        </label>
+        <div class="admin-form-actions">
+          <button type="submit" class="btn btn-dark" id="news-submit-btn">Publish post</button>
+          <button type="button" class="btn btn-ghost admin-cancel-btn" id="news-cancel-btn" style="display:none;">Cancel edit</button>
+        </div>
+        <div class="news-progress" id="news-progress" hidden><div class="news-progress-bar" id="news-progress-bar"></div></div>
+        <p class="form-status" id="news-status" role="status" aria-live="polite"></p>
+      </form>
+      <div class="admin-list" id="news-list"></div>
     </section>
 
     <section class="admin-view" data-view-panel="users">

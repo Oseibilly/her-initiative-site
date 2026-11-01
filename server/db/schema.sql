@@ -71,9 +71,23 @@ CREATE TABLE IF NOT EXISTS news_posts (
   excerpt TEXT,
   body TEXT NOT NULL,
   is_published BOOLEAN NOT NULL DEFAULT true,
+  published_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+ALTER TABLE news_posts ADD COLUMN IF NOT EXISTS published_at TIMESTAMPTZ;
+
+CREATE TABLE IF NOT EXISTS news_media (
+  id SERIAL PRIMARY KEY,
+  post_id INTEGER NOT NULL REFERENCES news_posts(id) ON DELETE CASCADE,
+  media_type TEXT NOT NULL CHECK (media_type IN ('image', 'video')),
+  url TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS news_media_post_idx ON news_media (post_id, sort_order, id);
 
 CREATE TABLE IF NOT EXISTS executives (
   id SERIAL PRIMARY KEY,

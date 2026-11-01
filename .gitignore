@@ -1,0 +1,4 @@
+# Uploaded news pictures/videos live on the server only — back them up separately.
+uploads/
+node_modules/
+.env
