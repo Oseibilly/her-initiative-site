@@ -142,3 +142,29 @@ CREATE TABLE IF NOT EXISTS contact_messages (
   message TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE TABLE IF NOT EXISTS resource_articles (
+  id SERIAL PRIMARY KEY,
+  section TEXT NOT NULL,
+  title TEXT NOT NULL,
+  author TEXT,
+  excerpt TEXT,
+  body TEXT NOT NULL,
+  is_published BOOLEAN NOT NULL DEFAULT true,
+  published_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS resource_articles_section_idx ON resource_articles (section, is_published);
+
+CREATE TABLE IF NOT EXISTS resource_media (
+  id SERIAL PRIMARY KEY,
+  article_id INTEGER NOT NULL REFERENCES resource_articles(id) ON DELETE CASCADE,
+  media_type TEXT NOT NULL CHECK (media_type IN ('image', 'video')),
+  url TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS resource_media_article_idx ON resource_media (article_id, sort_order, id);

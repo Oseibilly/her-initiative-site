@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node index.js",
     "migrate": "node db/migrate.js",
-    "migrate:news": "node db/migrate-news-media.js"
+    "migrate:news": "node db/migrate-news-media.js",
+    "migrate:resources": "node db/migrate-resources.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

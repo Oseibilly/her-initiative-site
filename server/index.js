@@ -21,6 +21,8 @@ const adminSummaryRouter = require('./routes/admin-summary');
 const siteImagesRouter = require('./routes/site-images');
 const submissionsRouter = require('./routes/submissions');
 const newsRouter = require('./routes/news');
+const resourcesRouter = require('./routes/resources');
+const { SECTION_SLUGS } = require('./resource-sections');
 
 const ROOT = path.join(__dirname, '..');
 const PAGES = path.join(ROOT, 'pages');
@@ -44,6 +46,13 @@ app.get('/impact', (req, res) => sendPage(res, path.join(PAGES, 'impact.html')))
 app.get('/news', (req, res) => sendPage(res, path.join(PAGES, 'news.html')));
 app.get('/news/:id', (req, res) => sendPage(res, path.join(PAGES, 'news.html')));
 app.get('/resources', (req, res) => sendPage(res, path.join(PAGES, 'resources.html')));
+const sendResourceArticlePage = (req, res, next) => {
+  if (!SECTION_SLUGS.includes(req.params.section)) return next();
+  if (req.params.id !== undefined && !/^\d+$/.test(req.params.id)) return next();
+  sendPage(res, path.join(PAGES, 'resource-articles.html'));
+};
+app.get('/resources/:section', sendResourceArticlePage);
+app.get('/resources/:section/:id', sendResourceArticlePage);
 app.get('/get-involved', (req, res) => sendPage(res, path.join(PAGES, 'get-involved.html')));
 app.get('/join', (req, res) => sendPage(res, path.join(PAGES, 'join.html')));
 app.get('/volunteer', (req, res) => sendPage(res, path.join(PAGES, 'volunteer.html')));
@@ -80,6 +89,7 @@ app.use('/api', adminSummaryRouter);
 app.use('/api', siteImagesRouter);
 app.use('/api', submissionsRouter);
 app.use('/api', newsRouter);
+app.use('/api', resourcesRouter);
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
 app.use((err, req, res, next) => {

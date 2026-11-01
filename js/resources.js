@@ -50,6 +50,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+// Show a "Read N articles" link on each section card that has published articles.
+document.addEventListener('DOMContentLoaded', async () => {
+  const sectionCards = document.querySelectorAll('#resource-card-grid .info-card[data-section]');
+  if (sectionCards.length === 0) return;
+
+  try {
+    const res = await fetch('/api/resources/sections');
+    if (!res.ok) return;
+    const sections = await res.json();
+    sectionCards.forEach((card) => {
+      const section = sections.find((s) => s.slug === card.getAttribute('data-section'));
+      if (!section || section.count === 0) return;
+      const link = document.createElement('a');
+      link.className = 'home-link';
+      link.href = `/resources/${section.slug}`;
+      link.textContent = section.count === 1 ? 'Read 1 article' : `Read ${section.count} articles`;
+      card.appendChild(link);
+    });
+  } catch (err) {
+    // Cards stay as plain text if the API is unreachable.
+  }
+});
+
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;

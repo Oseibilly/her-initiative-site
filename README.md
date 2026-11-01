@@ -116,3 +116,21 @@ MP4/WebM/MOV ≤ 100MB). Files are stored in `uploads/news/` and served from
 `/uploads/news/…`. Published posts show on `/news`, the latest three on the
 Impact page, and a teaser on the home page. Unticking "Published" keeps a post
 as a draft. Deleting a post or a single file also deletes it from disk.
+
+## Resource articles
+
+Admins write articles under **Resource Articles** in `/admin`, choosing one of the
+sections on the Resources page (Hormonal Health, HER Women, HER Men, HER Youth,
+Community Health, Expert Conversations, Myths & Facts). Each article has a title,
+optional author and summary, the text, and optional pictures/videos (first picture
+is the cover). In the text, leave a blank line between paragraphs, start a line
+with `## ` for a heading, and start lines with `- ` for a bullet list.
+
+- Public pages: `/resources/<section>` lists a section's articles and
+  `/resources/<section>/<id>` is the reading page. A section card on `/resources`
+  shows a "Read N articles" link once it has published articles.
+- Sections are defined in `server/resource-sections.js` (and the matching
+  `data-section` attributes in `pages/resources.html`). To add a section, add it
+  to both.
+- Files are stored in `uploads/articles/`. Run `npm run migrate:resources` once on
+  existing databases.

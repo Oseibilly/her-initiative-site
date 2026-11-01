@@ -34,11 +34,11 @@ const NEWS_MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const NEWS_MAX_VIDEO_BYTES = 100 * 1024 * 1024;
 const NEWS_DIR = path.join(__dirname, '..', 'uploads', 'news');
 
-function createNewsUploader() {
-  fs.mkdirSync(NEWS_DIR, { recursive: true });
+function createMediaUploader(dir) {
+  fs.mkdirSync(dir, { recursive: true });
 
   const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, NEWS_DIR),
+    destination: (req, file, cb) => cb(null, dir),
     filename: (req, file, cb) => {
       const ext = path.extname(file.originalname).toLowerCase();
       const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.mp4', '.webm', '.mov'];
@@ -65,11 +65,16 @@ function createNewsUploader() {
   });
 }
 
-const uploadNewsMedia = createNewsUploader();
+const uploadNewsMedia = createMediaUploader(NEWS_DIR);
+
+const ARTICLES_DIR = path.join(__dirname, '..', 'uploads', 'articles');
+const uploadArticleMedia = createMediaUploader(ARTICLES_DIR);
 
 module.exports = upload;
 module.exports.uploadNewsMedia = uploadNewsMedia;
 module.exports.NEWS_DIR = NEWS_DIR;
+module.exports.uploadArticleMedia = uploadArticleMedia;
+module.exports.ARTICLES_DIR = ARTICLES_DIR;
 module.exports.NEWS_MAX_IMAGE_BYTES = NEWS_MAX_IMAGE_BYTES;
 module.exports.NEWS_MAX_VIDEO_BYTES = NEWS_MAX_VIDEO_BYTES;
 module.exports.NEWS_VIDEO_TYPES = NEWS_VIDEO_TYPES;

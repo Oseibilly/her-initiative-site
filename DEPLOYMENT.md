@@ -222,3 +222,11 @@ pm2 restart her-initiative
    `git pull` will not touch it, but include it in your backups (for example
    `rsync -a uploads/ you@backup:her-uploads/`) and keep an eye on disk space.
 4. `pm2 restart her-initiative` after deploying.
+
+## Resource articles — deploy steps
+
+1. `git pull` on the server, then in `server/` run `npm run migrate:resources` once.
+2. `pm2 restart her-initiative`.
+3. Uploaded article pictures/videos live in `uploads/articles/` (not in git) — include
+   it in backups alongside `uploads/news/`. The nginx `client_max_body_size 120M;`
+   setting from the News section covers article uploads too.
